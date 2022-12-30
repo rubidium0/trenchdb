@@ -176,6 +176,14 @@ MySQLHandler.update = function(table, data, where) {
   return this.executeQuery(query);
 };
 
+MySQLHandler.encryptValues = function(data) {
+  const encryptedData = {};
+  Object.keys(data).forEach((key) => {
+    encryptedData[key] = `PASSWORD(${this.escape(data[key])})`;
+  });
+  return encryptedData;
+};
+
 global.exports('executeQuery', (query, ...values) => MySQLHandler.executeQuery(query, ...values))
 global.exports('transaction', (queries) => MySQLHandler.transaction(queries))
 global.exports('scalar', (query, ...values) => MySQLHandler.scalar(query, ...values))
