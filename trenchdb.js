@@ -137,6 +137,45 @@ MySQLHandler.getQueryHistory = function() {
   return this.queryHistory;
 };
 
+MySQLHandler.escape = function(value) {
+  return this.connection.escape(value);
+};
+
+MySQLHandler.select = function(table, columns, where) {
+  let query = `SELECT ${columns.join(", ")} FROM ${table}`;
+  if (where) {
+    const whereClause = Object.keys(where).map((key) => {
+      return `${key} = ${this.escape(where[key])}`;
+    }).join(" AND ");
+    query += ` WHERE ${whereClause}`;
+  }
+  return this.executeQuery(query);
+};
+
+MySQLHandler.insert = function(table, data) {
+  const columnNames = Object.keys(data);
+  const values = columnNames.map((column) => {
+    return this.escape(data[column]);
+  });
+  const query = `INSERT INTO ${table} (${columnNames.join(", ")}) VALUES (${values.join(", ")})`;
+  return this.executeQuery(query);
+};
+
+MySQLHandler.update = function(table, data, where) {
+  let query = `UPDATE ${table} SET `;
+  const setClause = Object.keys(data).map((key) => {
+    return `${key} = ${this.escape(data[key])}`;
+  }).join(", ");
+  query += setClause;
+  if (where) {
+    const whereClause = Object.keys(where).map((key) => {
+      return `${key} = ${this.escape(where[key])}`;
+    }).join(" AND ");
+    query += ` WHERE ${whereClause}`;
+  }
+  return this.executeQuery(query);
+};
+
 global.exports('executeQuery', (query, ...values) => MySQLHandler.executeQuery(query, ...values))
 global.exports('transaction', (queries) => MySQLHandler.transaction(queries))
 global.exports('scalar', (query, ...values) => MySQLHandler.scalar(query, ...values))
